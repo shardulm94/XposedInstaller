@@ -1,8 +1,10 @@
 package de.robv.android.xposed.installer;
 
+import android.annotation.TargetApi;
 import android.app.Fragment;
 import android.content.Intent;
 import android.os.AsyncTask;
+import android.os.Build;
 import android.os.Bundle;
 import android.support.v4.view.MenuItemCompat;
 import android.support.v7.widget.SearchView;
@@ -13,6 +15,8 @@ import android.view.MenuInflater;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.Button;
+import android.widget.CompoundButton;
 import android.widget.HorizontalScrollView;
 import android.widget.ScrollView;
 import android.widget.TextView;
@@ -27,12 +31,11 @@ import java.io.IOException;
  * Created by Arijeet on 10/30/2017.
  */
 
-public class PermissionManager extends Fragment{
+public class PermissionManagerFragment extends Fragment{
 
     private TextView mTxtLog;
     private ScrollView mSVLog;
     private HorizontalScrollView mHSVLog;
-    private MenuItem mClickedMenuItem = null;
 
     @Override
     public void onActivityCreated(Bundle savedInstanceState) {
@@ -50,7 +53,7 @@ public class PermissionManager extends Fragment{
         mHSVLog = (HorizontalScrollView) v.findViewById(R.id.hsvLog);
         try {
             PermissionManagerUtil.logFile.createNewFile(); //create log file if donot exsist
-            PermissionManagerUtil.saveChangesToLog("mname", "pname", true);
+            //PermissionManagerUtil.saveChangesToLog("mname", "pname", true, PermissionManagerUtil.logFile);
         } catch (IOException e) {
             e.printStackTrace();
         }
@@ -65,22 +68,9 @@ public class PermissionManager extends Fragment{
 
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
-        mClickedMenuItem = item;
-        switch (item.getItemId()) {
-            case R.id.menu_allow:
-                try {
-                    PermissionManagerUtil.classifyLogs(true);
-                } catch (IOException e) {
-                    e.printStackTrace();
-                }
-                return true;
-            case R.id.menu_deny:
-                try {
-                    PermissionManagerUtil.classifyLogs(false);
-                } catch (IOException e) {
-                    e.printStackTrace();
-                }
-                return true;
+        if(item.getItemId() == R.id.menu_config){
+            startActivity(new Intent(getActivity(), PermissionListActivity.class));
+            return true;
         }
         return super.onOptionsItemSelected(item);
     }

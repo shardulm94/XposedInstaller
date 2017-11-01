@@ -24,14 +24,13 @@ public class PermissionManagerUtil {
     public static File logFile = new File(XposedApp.BASE_DIR + "log/permlog.json");
     public static File perFile = new File(XposedApp.BASE_DIR + "conf/permissions.json");
     public static String PERMISSION_INTENT = "de.robv.android.xposed.installer.PERMISSION_ACCESS";
-
     private static ConcurrentHashMap<String, Set<String>> permissionMap= new ConcurrentHashMap<>();
     private static ConcurrentHashMap<String, Map<String, Boolean>> logMap = new ConcurrentHashMap<>(); // always flush
 
-    public static File saveChangesToLog(String mname, String pname, boolean isAllowed){
+    public static File saveChangesToLog(String mname, String pname, boolean isAllowed, File file){
         try {
             //logFile.createNewFile();
-            JsonWriter jwriter =  new JsonWriter(new OutputStreamWriter(new FileOutputStream(logFile)));
+            JsonWriter jwriter =  new JsonWriter(new OutputStreamWriter(new FileOutputStream(file)));
             jwriter.setIndent("  ");
             jwriter.beginArray();
             jwriter.beginObject();
@@ -41,7 +40,7 @@ public class PermissionManagerUtil {
             jwriter.endObject();
             jwriter.endArray();
             jwriter.close();
-            return logFile;
+            return file;
         } catch (IOException e) {
             return null;
         }
@@ -62,12 +61,18 @@ public class PermissionManagerUtil {
         }
     }
 
-    public static boolean isAllowed(String module, String pname){
+    public static ConcurrentHashMap<String, Map<String, Boolean>> getLogMap() {
         try {
+            readPermissions();
             readLogs();
         } catch (IOException e) {
             e.printStackTrace();
         }
+        return logMap;
+    }
+
+    public static boolean isAllowed(String module, String pname){
+        getLogMap();
         return logMap.containsKey(module) && logMap.get(module).containsKey(pname)
                 ? logMap.get(module).get(pname) : false;
     }
@@ -162,9 +167,9 @@ public class PermissionManagerUtil {
         reader.beginObject();
         while (reader.hasNext()) {
             String name = reader.nextName();
-            if (name.equals("name")) {
+            if (name.equals("module_name")) {
                 m.name = reader.nextString();
-            } else if (name.equals("packages")) {
+            } else if (name.equals("package_name")) {
                 m.packages = readPackagesSet(reader);
             } else {
                 reader.skipValue();

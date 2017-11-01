@@ -140,8 +140,8 @@ public class WelcomeActivity extends XposedBaseActivity implements NavigationVie
                 break;
             case R.id.nav_item_permissions:
                 mPrevSelectedId = itemId;
-                setTitle("Permissions");
-                navFragment = new PermissionManager();
+                setTitle("Permission Manager");
+                navFragment = new PermissionManagerFragment();
                 break;
             case R.id.nav_item_logs:
                 mPrevSelectedId = itemId;

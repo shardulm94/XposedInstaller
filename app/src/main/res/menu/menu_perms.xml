@@ -2,12 +2,7 @@
 <menu xmlns:android="http://schemas.android.com/apk/res/android"
       xmlns:app="http://schemas.android.com/apk/res-auto">
     <item
-        android:id="@+id/menu_allow"
-        android:title="Allowed"
-        app:showAsAction="ifRoom"/>
-
-    <item
-        android:id="@+id/menu_deny"
-        android:title="Denied"
+        android:id="@+id/menu_config"
+        android:title="Configure"
         app:showAsAction="ifRoom"/>
 </menu>

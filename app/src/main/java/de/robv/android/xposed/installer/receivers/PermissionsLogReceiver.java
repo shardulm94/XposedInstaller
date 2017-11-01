@@ -18,7 +18,8 @@ public class PermissionsLogReceiver extends BroadcastReceiver {
             String module_name = intent.getStringExtra("moduleName");
             String package_name = intent.getStringExtra("packageName");
             boolean isAllowed = intent.getBooleanExtra("granted", false);
-            PermissionManagerUtil.saveChangesToLog(module_name, package_name, isAllowed);
+            PermissionManagerUtil.saveChangesToLog(module_name,
+                    package_name, isAllowed, PermissionManagerUtil.logFile);
         }
     }
 
