@@ -32,6 +32,12 @@
             android:exported="true"
             android:theme="@style/Theme.XposedInstaller.Transparent">
             <intent-filter>
+                <action android:name="de.robv.android.xposed.installer.PERMISSION_ACCESS"/>
+                <category android:name="android.intent.category.DEFAULT"/>
+                <data android:mimeType="text/plain"/>
+            </intent-filter>
+
+            <intent-filter>
                 <action android:name="de.robv.android.xposed.installer.DOWNLOAD_DETAILS"/>
 
                 <data android:scheme="package"/>
