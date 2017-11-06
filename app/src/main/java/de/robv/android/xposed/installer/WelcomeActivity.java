@@ -269,4 +269,5 @@ public class WelcomeActivity extends XposedBaseActivity implements NavigationVie
         ModuleUtil.getInstance().removeListener(this);
         mRepoLoader.removeListener(this);
     }
+
 }

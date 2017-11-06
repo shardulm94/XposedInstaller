@@ -2,15 +2,21 @@ package de.robv.android.xposed.installer;
 import android.util.JsonReader;
 import android.util.JsonWriter;
 import android.util.Log;
+import com.google.gson.Gson;
+import com.google.gson.reflect.TypeToken;
+
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
+import java.io.FileWriter;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.OutputStreamWriter;
+import java.lang.reflect.Type;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
+import java.util.Scanner;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import static android.content.ContentValues.TAG;
@@ -27,10 +33,10 @@ public class PermissionManagerUtil {
     private static ConcurrentHashMap<String, Set<String>> permissionMap= new ConcurrentHashMap<>();
     private static ConcurrentHashMap<String, Map<String, Boolean>> logMap = new ConcurrentHashMap<>(); // always flush
 
-    public static File saveChangesToLog(String mname, String pname, boolean isAllowed, File file){
+    public static void saveChangesToLog(String mname, String pname, boolean isAllowed){
         try {
-            //logFile.createNewFile();
-            JsonWriter jwriter =  new JsonWriter(new OutputStreamWriter(new FileOutputStream(file)));
+            logFile.createNewFile();
+            JsonWriter jwriter =  new JsonWriter(new OutputStreamWriter(new FileOutputStream(logFile)));
             jwriter.setIndent("  ");
             jwriter.beginArray();
             jwriter.beginObject();
@@ -40,15 +46,16 @@ public class PermissionManagerUtil {
             jwriter.endObject();
             jwriter.endArray();
             jwriter.close();
-            return file;
         } catch (IOException e) {
-            return null;
+            Log.e(TAG, "Error occurred while saving changes to Log");
         }
     }
 
     public static void updatePermissions(String module, String pname, boolean allow){
         // update the perm map and push to storage
-        boolean currAllowed = permissionMap.get(module).contains(pname);
+        boolean currAllowed= false;
+        if(permissionMap.containsKey(module))
+            currAllowed = permissionMap.get(module).contains(pname);
         if(allow && !currAllowed){
             Set<String> plist= new HashSet<>();
             if(plist== null) plist= new HashSet<>();
@@ -71,29 +78,15 @@ public class PermissionManagerUtil {
         return logMap;
     }
 
-    public static boolean isAllowed(String module, String pname){
-        getLogMap();
-        return logMap.containsKey(module) && logMap.get(module).containsKey(pname)
-                ? logMap.get(module).get(pname) : false;
-    }
-
     public synchronized static void savePermissions(){
         File tmpWrite = new File(XposedApp.BASE_DIR + "conf/permissions_temp.json");
         try {
+            Gson gs= new Gson();
             tmpWrite.createNewFile();
-            JsonWriter jwriter =  new JsonWriter(new OutputStreamWriter(
-                    new FileOutputStream(tmpWrite)));
-            jwriter.setIndent("  ");
-            jwriter.beginArray();
-            for(String mname : permissionMap.keySet()){
-                for(String pname : permissionMap.get(mname)){
-                    jwriter.beginObject();
-                    jwriter.name("name").value(mname);
-                    jwriter.name("packages").value(pname);
-                    jwriter.endObject();
-                }
-            }
-            jwriter.endArray();
+            String jsonString = gs.toJson(permissionMap);
+            FileWriter fwriter =  new FileWriter(tmpWrite);
+            fwriter.write(jsonString);
+            fwriter.close();
             tmpWrite.renameTo(perFile);
         } catch (IOException e) {
             e.printStackTrace();
@@ -115,7 +108,9 @@ public class PermissionManagerUtil {
             }
         }
         if(!mname.isEmpty() && !pname.isEmpty()){
-            boolean allowed= permissionMap.get(mname).contains(pname);
+            boolean allowed= false;
+            if(permissionMap.containsKey(mname))
+                allowed= permissionMap.get(mname).contains(pname);
             Map<String, Boolean> pmap = new HashMap<>();
             pmap.put(pname, allowed);
             logMap.put(mname, pmap);
@@ -124,7 +119,7 @@ public class PermissionManagerUtil {
     }
 
     private static void readLogs() throws IOException{
-        JsonReader reader = new JsonReader(new InputStreamReader(new FileInputStream(perFile)));
+        JsonReader reader = new JsonReader(new InputStreamReader(new FileInputStream(logFile)));
         try {
             reader.beginArray();
             while (reader.hasNext()) {
@@ -137,55 +132,11 @@ public class PermissionManagerUtil {
         Log.i(TAG, "Loaded Permission Logs: " + permissionMap.toString());
     }
 
-    private static class Module {
-        String name;
-        Set<String> packages;
-    }
-
     private static void readPermissions() throws IOException {
-        JsonReader reader = new JsonReader(new InputStreamReader(new FileInputStream(perFile)));
-        try {
-            readModulesArray(reader);
-        } finally {
-            reader.close();
-        }
+        if(!perFile.exists()) return;
+        String content = new Scanner(perFile).useDelimiter("\\Z").next();
+        Type token = new TypeToken<ConcurrentHashMap<String, Set<String>>>(){}.getType();
+        permissionMap= new Gson().fromJson(content, token);
         Log.i(TAG, "Loaded Permissions: " + permissionMap.toString());
-    }
-
-    private static void readModulesArray(JsonReader reader) throws IOException {
-        reader.beginArray();
-        while (reader.hasNext()) {
-            Module m = readModule(reader);
-            permissionMap.put(m.name, m.packages);
-        }
-        reader.endArray();
-    }
-
-    private static Module readModule(JsonReader reader) throws IOException {
-        Module m = new Module();
-
-        reader.beginObject();
-        while (reader.hasNext()) {
-            String name = reader.nextName();
-            if (name.equals("module_name")) {
-                m.name = reader.nextString();
-            } else if (name.equals("package_name")) {
-                m.packages = readPackagesSet(reader);
-            } else {
-                reader.skipValue();
-            }
-        }
-        reader.endObject();
-        return m;
-    }
-
-    private static Set<String> readPackagesSet(JsonReader reader) throws IOException {
-        Set<String> packages = new HashSet<String>();
-        reader.beginArray();
-        while (reader.hasNext()) {
-            packages.add(reader.nextString());
-        }
-        reader.endArray();
-        return packages;
     }
 }

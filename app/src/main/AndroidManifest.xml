@@ -25,6 +25,12 @@
                 <category android:name="android.intent.category.LAUNCHER"/>
             </intent-filter>
         </activity>
+        <receiver android:name=".receivers.PermissionsLogReceiver"  android:exported="true">
+            <intent-filter>
+                <action android:name="de.robv.android.xposed.installer.PERMISSION_ACCESS"/>
+                <category android:name="android.intent.category.LAUNCHER"/>
+            </intent-filter>
+        </receiver>
         <activity
             android:name=".PermissionListActivity"
             android:configChanges="orientation|screenSize"
@@ -40,11 +46,6 @@
             android:configChanges="orientation|screenSize"
             android:exported="true"
             android:theme="@style/Theme.XposedInstaller.Transparent">
-            <intent-filter>
-                <action android:name="de.robv.android.xposed.installer.PERMISSION_ACCESS"/>
-                <category android:name="android.intent.category.DEFAULT"/>
-                <data android:mimeType="text/plain"/>
-            </intent-filter>
             <intent-filter>
                 <action android:name="de.robv.android.xposed.installer.DOWNLOAD_DETAILS"/>
                 <data android:scheme="package"/>

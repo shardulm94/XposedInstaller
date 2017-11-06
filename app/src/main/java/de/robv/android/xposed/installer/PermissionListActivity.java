@@ -21,6 +21,7 @@ import java.util.Map;
 public class PermissionListActivity extends ListActivity {
 
     public void onCreate(Bundle icicle) {
+        setTitle("Permission Manager");
         super.onCreate(icicle);
         // create an array of Strings, that will be put to our ListActivity
         ArrayAdapter<Model> adapter = new InteractiveArrayAdapter(this,
