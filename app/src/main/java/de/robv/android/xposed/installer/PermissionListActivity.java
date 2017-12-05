@@ -60,7 +60,7 @@ public class PermissionListActivity extends ListActivity {
             ArrayAdapter<Model> adapter = new InteractiveArrayAdapter(this,getModel());
             setListAdapter(adapter);
         } catch (Exception e) {
-            Log.e(TAG, "onCreate ke yaha phata");
+            Log.e(TAG, "Error onCreate");
         }
     }
 

@@ -13,8 +13,10 @@ import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.OutputStreamWriter;
 import java.lang.reflect.Type;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Map;
 import java.util.Scanner;
 import java.util.Set;
@@ -26,6 +28,15 @@ import static android.content.ContentValues.TAG;
  */
 
 public class PermissionManagerUtil {
+
+    public static class permJson {
+        String mname;
+        Set<String> pnames;
+        permJson(String module, Set<String> packs){
+            mname= module;
+            pnames= packs;
+        }
+    }
 
     public static File logFile = new File(XposedApp.BASE_DIR + "log/permlog.json");
     public static File perFile = new File(XposedApp.BASE_DIR + "conf/permissions.json");
@@ -81,6 +92,14 @@ public class PermissionManagerUtil {
         return logMap;
     }
 
+    private static List<permJson> readMapintoArray(Map<String, Set<String>> pMap){
+        List<permJson> res= new ArrayList<>();
+        for(String key: pMap.keySet()){
+            res.add(new permJson(key, pMap.get(key)));
+        }
+        return res;
+    }
+
     public synchronized static void savePermissions(){
         File tmpWrite = new File(XposedApp.BASE_DIR + "conf/permissions_temp.json");
         try {
@@ -89,8 +108,9 @@ public class PermissionManagerUtil {
             tmpWrite.setReadable(true, false);
             tmpWrite.setWritable(true, false);
             tmpWrite.setExecutable(true, false);
-            String jsonString = gs.toJson(permissionMap);
-            FileWriter fwriter = new FileWriter(tmpWrite);
+            String jsonString = gs.toJson(readMapintoArray(permissionMap));
+
+            FileWriter fwriter =  new FileWriter(tmpWrite);
             fwriter.write(jsonString);
             fwriter.close();
             tmpWrite.renameTo(perFile);
@@ -128,7 +148,7 @@ public class PermissionManagerUtil {
         JsonReader reader = new JsonReader(new InputStreamReader(new FileInputStream(logFile)));
         try {
 
-            PermissionManagerUtil.saveChangesToLog("TestModule", "TestPackage", true);
+            //PermissionManagerUtil.saveChangesToLog("TestModule", "TestPackage", true);
             reader.beginArray();
             while (reader.hasNext()) {
                 readLogModule(reader);
@@ -144,11 +164,18 @@ public class PermissionManagerUtil {
         Log.i(TAG, "Loaded Permission Logs: " + permissionMap.toString());
     }
 
+    private static void readListtoMap(List<permJson> pMap){
+        for(permJson entry: pMap){
+            permissionMap.put(entry.mname, entry.pnames);
+        }
+        Log.i(TAG, "Loaded Permissions: " + permissionMap.toString());
+    }
+
     private static void readPermissions() throws IOException {
         if(!perFile.exists()) return;
         String content = new Scanner(perFile).useDelimiter("\\Z").next();
-        Type token = new TypeToken<ConcurrentHashMap<String, Set<String>>>(){}.getType();
-        permissionMap= new Gson().fromJson(content, token);
-        Log.i(TAG, "Loaded Permissions: " + permissionMap.toString());
+        Type token = new TypeToken<List<permJson>>(){}.getType();
+        List<permJson> pMap= new Gson().fromJson(content, token);
+        readListtoMap(pMap);
     }
 }
