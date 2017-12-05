@@ -36,6 +36,9 @@ public class PermissionManagerUtil {
     public static void saveChangesToLog(String mname, String pname, boolean isAllowed){
         try {
             logFile.createNewFile();
+            logFile.setReadable(true, false);
+            logFile.setWritable(true, false);
+            logFile.setExecutable(true, false);
             JsonWriter jwriter =  new JsonWriter(new OutputStreamWriter(new FileOutputStream(logFile)));
             jwriter.setIndent("  ");
             jwriter.beginArray();
@@ -83,8 +86,11 @@ public class PermissionManagerUtil {
         try {
             Gson gs= new Gson();
             tmpWrite.createNewFile();
+            tmpWrite.setReadable(true, false);
+            tmpWrite.setWritable(true, false);
+            tmpWrite.setExecutable(true, false);
             String jsonString = gs.toJson(permissionMap);
-            FileWriter fwriter =  new FileWriter(tmpWrite);
+            FileWriter fwriter = new FileWriter(tmpWrite);
             fwriter.write(jsonString);
             fwriter.close();
             tmpWrite.renameTo(perFile);
@@ -121,12 +127,18 @@ public class PermissionManagerUtil {
     private static void readLogs() throws IOException{
         JsonReader reader = new JsonReader(new InputStreamReader(new FileInputStream(logFile)));
         try {
+
+            PermissionManagerUtil.saveChangesToLog("TestModule", "TestPackage", true);
             reader.beginArray();
             while (reader.hasNext()) {
                 readLogModule(reader);
             }
             reader.endArray();
-        } finally {
+        }
+        catch(Exception e){
+            Log.e(TAG, "Permission read error " + e.getLocalizedMessage());
+        }
+        finally {
             reader.close();
         }
         Log.i(TAG, "Loaded Permission Logs: " + permissionMap.toString());
