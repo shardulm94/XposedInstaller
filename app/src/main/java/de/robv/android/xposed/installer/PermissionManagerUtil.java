@@ -40,7 +40,7 @@ public class PermissionManagerUtil {
 
     public static File logFile = new File(XposedApp.BASE_DIR + "log/permlog.json");
     public static File perFile = new File(XposedApp.BASE_DIR + "conf/permissions.json");
-    public static String PERMISSION_INTENT = "de.robv.android.xposed.installer.PERMISSION_ACCESS";
+    public static String PERMISSION_INTENT = "de.robv.android.xposed.installer.action.PERMISSION_NOTIFICATION";
     private static ConcurrentHashMap<String, Set<String>> permissionMap= new ConcurrentHashMap<>();
     private static ConcurrentHashMap<String, Map<String, Boolean>> logMap = new ConcurrentHashMap<>(); // always flush
 

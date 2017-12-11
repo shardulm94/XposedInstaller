@@ -18,6 +18,8 @@ import de.robv.android.xposed.installer.R;
 
 public class PermissionsLogReceiver extends BroadcastReceiver {
 
+    public final static String TAG = "XposedPermissionLogRecv";
+
     private void pushNotification(Context context){
         int icon = R.drawable.icon_perm;
         CharSequence tickerText = "Configure Xposed Permissions";
@@ -50,7 +52,7 @@ public class PermissionsLogReceiver extends BroadcastReceiver {
 
     @Override
     public void onReceive(final Context context, final Intent intent) {
-        Log.i("receiving", "perm received.......");
+        Log.i(TAG, "perm received.......");
         String action = intent.getAction();
         if (action.equalsIgnoreCase(PermissionManagerUtil.PERMISSION_INTENT)) {
             String module_name = intent.getStringExtra("moduleName");

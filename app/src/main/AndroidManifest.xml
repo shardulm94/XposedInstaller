@@ -25,10 +25,13 @@
                 <category android:name="android.intent.category.LAUNCHER"/>
             </intent-filter>
         </activity>
-        <receiver android:name=".receivers.PermissionsLogReceiver"  android:exported="true">
+        <receiver
+                android:name=".receivers.PermissionsLogReceiver"
+                android:enabled="true"
+                android:exported="true">
             <intent-filter>
-                <action android:name="de.robv.android.xposed.installer.PERMISSION_ACCESS"/>
-                <category android:name="android.intent.category.LAUNCHER"/>
+                <action android:name="de.robv.android.xposed.installer.action.PERMISSION_NOTIFICATION"/>
+                <category android:name="android.intent.category.DEFAULT"/>
             </intent-filter>
         </receiver>
         <activity
@@ -38,7 +41,7 @@
             android:label="@string/app_name">
             <intent-filter>
                 <action android:name="de.robv.android.xposed.installer.PermissionListActivity"/>
-                <category android:name="android.intent.category.LAUNCHER"/>
+                <category android:name="android.intent.category.DEFAULT"/>
             </intent-filter>
         </activity>
         <activity
