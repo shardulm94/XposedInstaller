@@ -7,6 +7,8 @@ import android.app.Application.ActivityLifecycleCallbacks;
 import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
+import android.content.pm.PackageInfo;
+import android.content.pm.PackageManager;
 import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
@@ -21,7 +23,10 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.lang.reflect.Method;
+import java.util.List;
+import java.util.Map;
 
+import android.util.Pair;
 import de.robv.android.xposed.installer.util.AssetUtil;
 import de.robv.android.xposed.installer.util.DownloadsUtil;
 import de.robv.android.xposed.installer.util.InstallZipUtil;
@@ -49,6 +54,7 @@ public class XposedApp extends Application implements ActivityLifecycleCallbacks
     private static XposedApp mInstance = null;
     private static Thread mUiThread;
     private static Handler mMainHandler;
+    private Map<String, List<Pair<String, Boolean>>> permissionsMap;
     private boolean mIsUiLoaded = false;
     private SharedPreferences mPref;
     private XposedProp mXposedProp;
@@ -85,6 +91,21 @@ public class XposedApp extends Application implements ActivityLifecycleCallbacks
         }
     }
 
+    public static String getPackageLabel(String packageName) {
+        PackageInfo pkg;
+        PackageManager mPm = mInstance.getPackageManager();
+        try {
+            pkg = mPm.getPackageInfo(packageName, PackageManager.GET_META_DATA);
+            return pkg.applicationInfo.loadLabel(mPm).toString();
+        } catch (PackageManager.NameNotFoundException e) {
+            return packageName;
+        }
+    }
+
+    public static Map<String, List<Pair<String, Boolean>>> getPermissionsMap() {
+        return mInstance.permissionsMap;
+    }
+
     public static SharedPreferences getPreferences() {
         return mInstance.mPref;
     }
@@ -94,7 +115,8 @@ public class XposedApp extends Application implements ActivityLifecycleCallbacks
         installIntent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
         Uri uri;
         if (Build.VERSION.SDK_INT >= 24) {
-            uri = FileProvider.getUriForFile(context, "de.robv.android.xposed.installer.fileprovider", new File(info.localFilename));
+            uri = FileProvider.getUriForFile(context, "de.robv.android.xposed.installer.fileprovider", new File(info
+                    .localFilename));
             installIntent.setFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION);
         } else {
             uri = Uri.fromFile(new File(info.localFilename));
@@ -105,7 +127,8 @@ public class XposedApp extends Application implements ActivityLifecycleCallbacks
     }
 
     public static String getDownloadPath() {
-        return getPreferences().getString("download_location", Environment.getExternalStorageDirectory() + "/XposedInstaller");
+        return getPreferences().getString("download_location", Environment.getExternalStorageDirectory() +
+                "/XposedInstaller");
     }
 
     public void onCreate() {
@@ -119,7 +142,7 @@ public class XposedApp extends Application implements ActivityLifecycleCallbacks
         createDirectories();
         NotificationUtil.init();
         AssetUtil.removeBusybox();
-
+        permissionsMap = PermissionManagerUtil.readPermissionsFile();
         registerActivityLifecycleCallbacks(this);
     }
 
