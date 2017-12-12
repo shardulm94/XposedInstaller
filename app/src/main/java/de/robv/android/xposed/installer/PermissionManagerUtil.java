@@ -46,6 +46,7 @@ public class PermissionManagerUtil {
 
     public static void saveChangesToLog(String mname, String pname, boolean isAllowed){
         try {
+            if(!logFile.exists())
             logFile.createNewFile();
             logFile.setReadable(true, false);
             logFile.setWritable(true, false);

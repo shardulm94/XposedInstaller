@@ -52,7 +52,8 @@ public class PermissionManagerFragment extends Fragment{
         mSVLog = (ScrollView) v.findViewById(R.id.svLog);
         mHSVLog = (HorizontalScrollView) v.findViewById(R.id.hsvLog);
         try {
-            PermissionManagerUtil.logFile.createNewFile(); //create log file if donot exsist
+            if(!PermissionManagerUtil.logFile.exists())
+                PermissionManagerUtil.logFile.createNewFile(); //create log file if donot exsist
         } catch (IOException e) {
             e.printStackTrace();
         }

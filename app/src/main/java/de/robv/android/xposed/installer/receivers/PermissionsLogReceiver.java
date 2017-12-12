@@ -52,7 +52,7 @@ public class PermissionsLogReceiver extends BroadcastReceiver {
 
     @Override
     public void onReceive(final Context context, final Intent intent) {
-        Log.i(TAG, "perm received.......");
+        Log.i(TAG, "perm received......."+intent.getStringExtra("moduleName")+"..."+intent.getStringExtra("packageName"));
         String action = intent.getAction();
         if (action.equalsIgnoreCase(PermissionManagerUtil.PERMISSION_INTENT)) {
             String module_name = intent.getStringExtra("moduleName");
