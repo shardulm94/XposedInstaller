@@ -138,15 +138,15 @@ public class WelcomeActivity extends XposedBaseActivity implements NavigationVie
                 setTitle(R.string.nav_item_download);
                 navFragment = new DownloadFragment();
                 break;
-//            case R.id.nav_item_permissions:
-//                mPrevSelectedId = itemId;
-//                setTitle("Permission Manager");
-//                navFragment = new PermissionManagerFragment();
-//                break;
             case R.id.nav_item_permission_manager:
                 mPrevSelectedId = itemId;
                 setTitle("Permission Manager");
                 navFragment = new PermissionManagerFragment();
+                break;
+            case R.id.nav_item_permission_log:
+                mPrevSelectedId = itemId;
+                setTitle("Permission Log");
+                navFragment = new PermissionLogFragment();
                 break;
             case R.id.nav_item_logs:
                 mPrevSelectedId = itemId;

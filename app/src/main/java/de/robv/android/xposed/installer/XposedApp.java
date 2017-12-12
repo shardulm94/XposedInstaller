@@ -25,6 +25,7 @@ import java.io.IOException;
 import java.lang.reflect.Method;
 import java.util.List;
 import java.util.Map;
+import java.util.PriorityQueue;
 
 import android.util.Pair;
 import de.robv.android.xposed.installer.util.AssetUtil;
@@ -55,6 +56,7 @@ public class XposedApp extends Application implements ActivityLifecycleCallbacks
     private static Thread mUiThread;
     private static Handler mMainHandler;
     private Map<String, List<Pair<String, Boolean>>> permissionsMap;
+    private List<PermissionManagerUtil.LogEntry> logList;
     private boolean mIsUiLoaded = false;
     private SharedPreferences mPref;
     private XposedProp mXposedProp;
@@ -106,6 +108,10 @@ public class XposedApp extends Application implements ActivityLifecycleCallbacks
         return mInstance.permissionsMap;
     }
 
+    public static List<PermissionManagerUtil.LogEntry> getLogList() {
+        return mInstance.logList;
+    }
+
     public static SharedPreferences getPreferences() {
         return mInstance.mPref;
     }
@@ -143,6 +149,7 @@ public class XposedApp extends Application implements ActivityLifecycleCallbacks
         NotificationUtil.init();
         AssetUtil.removeBusybox();
         permissionsMap = PermissionManagerUtil.readPermissionsFile();
+        logList = PermissionManagerUtil.readLogFile();
         registerActivityLifecycleCallbacks(this);
     }
 
