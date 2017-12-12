@@ -30,11 +30,11 @@ import static android.content.ContentValues.TAG;
 public class PermissionManagerUtil {
 
     public static class permJson {
-        String mname;
-        Set<String> pnames;
+        String name;
+        Set<String> packages;
         permJson(String module, Set<String> packs){
-            mname= module;
-            pnames= packs;
+            name= module;
+            packages= packs;
         }
     }
 
@@ -166,7 +166,7 @@ public class PermissionManagerUtil {
 
     private static void readListtoMap(List<permJson> pMap){
         for(permJson entry: pMap){
-            permissionMap.put(entry.mname, entry.pnames);
+            permissionMap.put(entry.name, entry.packages);
         }
         Log.i(TAG, "Loaded Permissions: " + permissionMap.toString());
     }
