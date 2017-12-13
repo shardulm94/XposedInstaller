@@ -4,9 +4,7 @@ import android.app.Fragment;
 import android.content.Context;
 import android.os.Bundle;
 import android.util.Log;
-import android.view.LayoutInflater;
-import android.view.View;
-import android.view.ViewGroup;
+import android.view.*;
 import android.widget.BaseAdapter;
 import android.widget.ListView;
 import android.widget.TextView;
@@ -24,9 +22,16 @@ public class PermissionLogFragment extends Fragment {
     View rootView;
     ListView lv;
     SimpleDateFormat dateFormatter = new SimpleDateFormat("hh:mm:ss");
-
+    private MenuItem mClickedMenuItem = null;
+    private CustomListAdapter adapter = null;
     public PermissionLogFragment() {
 
+    }
+
+    @Override
+    public void onActivityCreated(Bundle savedInstanceState) {
+        super.onActivityCreated(savedInstanceState);
+        setHasOptionsMenu(true);
     }
 
     public void onCreate(Bundle savedInstanceState) {
@@ -48,10 +53,42 @@ public class PermissionLogFragment extends Fragment {
 
         try {
             lv = (ListView) view.findViewById(R.id.listLogs);
-            lv.setAdapter(new CustomListAdapter(this.getActivity(), new ArrayList(logs)));
+            adapter = new CustomListAdapter(this.getActivity(), new ArrayList(logs));
+            lv.setAdapter(adapter);
         } catch (Exception e) {
             Log.e(TAG, "Error onCreate");
         }
+    }
+
+    @Override
+    public void onCreateOptionsMenu(Menu menu, MenuInflater inflater) {
+        inflater.inflate(R.menu.menu_permission_logs, menu);
+    }
+
+    @Override
+    public boolean onOptionsItemSelected(MenuItem item) {
+        mClickedMenuItem = item;
+        switch (item.getItemId()) {
+            case R.id.menu_refresh:
+                reloadLog();
+                return true;
+            case R.id.menu_clear:
+                clear();
+                return true;
+        }
+        return super.onOptionsItemSelected(item);
+    }
+
+    private void reloadLog() {
+        adapter.logs = new ArrayList<>(XposedApp.getLogList());
+        adapter.notifyDataSetChanged();
+    }
+
+    private void clear() {
+        List<PermissionManagerUtil.LogEntry> logs = XposedApp.getLogList();
+        logs.clear();
+        PermissionManagerUtil.saveLogFile(logs);
+        reloadLog();
     }
 
     public class CustomListAdapter extends BaseAdapter {

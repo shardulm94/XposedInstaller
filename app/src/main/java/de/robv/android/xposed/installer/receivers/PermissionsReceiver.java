@@ -37,6 +37,7 @@ public class PermissionsReceiver extends BroadcastReceiver {
     }
 
     private void pushNotification(Context context, String module_name, String package_name) {
+        String pkg = module_name + ":" + package_name;
         CharSequence smallTickerText = String.format("Configure %s (Restart Required)", getPackageLabel(module_name));
         CharSequence tickerText = String.format("%s (%s) wants to hook to %s (%s)", getPackageLabel(module_name),
                 module_name, getPackageLabel(package_name), package_name);
@@ -48,16 +49,16 @@ public class PermissionsReceiver extends BroadcastReceiver {
         allow.putExtra("moduleNameL", getPackageLabel(module_name));
         allow.putExtra("packageNameL", getPackageLabel(package_name));
         allow.setAction(PermissionManagerUtil.PERMISSION_ALLOW);
-        PendingIntent allowpIntent = PendingIntent.getBroadcast(context, 0,
-                allow, PendingIntent.FLAG_UPDATE_CURRENT);
+        PendingIntent allowpIntent = PendingIntent.getBroadcast(context, pkg.hashCode(),
+                allow,PendingIntent.FLAG_IMMUTABLE);
         Intent deny = new Intent(context, PermissionsReceiver.class);
         deny.putExtra("moduleName", module_name);
         deny.putExtra("packageName", package_name);
         deny.putExtra("moduleNameL", getPackageLabel(module_name));
         deny.putExtra("packageNameL", getPackageLabel(package_name));
         deny.setAction(PermissionManagerUtil.PERMISSION_DENY);
-        PendingIntent denypIntent = PendingIntent.getBroadcast(context, 0,
-                deny, PendingIntent.FLAG_UPDATE_CURRENT);
+        PendingIntent denypIntent = PendingIntent.getBroadcast(context, pkg.hashCode(),
+                deny, PendingIntent.FLAG_IMMUTABLE);
         NotificationCompat.Builder builder = new NotificationCompat.Builder(
                 context)
                 // Set Icon
@@ -72,12 +73,9 @@ public class PermissionsReceiver extends BroadcastReceiver {
                         .bigText(tickerText))
                 // Add an Action Button below Notification
                 .addAction(android.R.drawable.ic_menu_add, "Allow", allowpIntent)
-                .addAction(android.R.drawable.ic_menu_close_clear_cancel, "Deny", denypIntent)
+                .addAction(R.drawable.ic_close, "Deny", denypIntent)
                 // Dismiss Notification
                 .setAutoCancel(true);
-        allow.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP
-                | Intent.FLAG_ACTIVITY_SINGLE_TOP);
-        String pkg = module_name + ":" + package_name;
         notificationManager.notify(pkg.hashCode(), builder.build());
     }
 

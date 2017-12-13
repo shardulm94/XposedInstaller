@@ -61,7 +61,7 @@ public class PermissionManagerUtil {
             gson.toJson(logs, token, fw);
             fw.close();
             logFile.setReadable(true, false);
-            logFile.setWritable(false);
+            logFile.setWritable(true);
             logFile.setExecutable(false);
         } catch (Exception e) {
             Log.e(TAG, Log.getStackTraceString(e));

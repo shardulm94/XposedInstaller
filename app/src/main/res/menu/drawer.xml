@@ -17,11 +17,11 @@
             android:title="@string/nav_item_download"/>
         <item
             android:id="@+id/nav_item_permission_manager"
-            android:icon="@drawable/icon_perm"
+            android:icon="@android:drawable/ic_lock_idle_lock"
             android:title="Permission Manager"/>
         <item
             android:id="@+id/nav_item_permission_log"
-            android:icon="@drawable/icon_perm"
+            android:icon="@android:drawable/ic_menu_view"
             android:title="Permission Logs"/>
         <item
             android:id="@+id/nav_item_logs"

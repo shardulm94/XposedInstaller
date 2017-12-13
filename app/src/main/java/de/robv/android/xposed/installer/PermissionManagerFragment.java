@@ -3,12 +3,11 @@ package de.robv.android.xposed.installer;
 import android.app.Fragment;
 import android.content.Context;
 import android.graphics.Typeface;
+import android.graphics.drawable.Drawable;
 import android.os.Bundle;
 import android.util.Log;
 import android.util.Pair;
-import android.view.LayoutInflater;
-import android.view.View;
-import android.view.ViewGroup;
+import android.view.*;
 import android.widget.BaseExpandableListAdapter;
 import android.widget.CheckedTextView;
 import android.widget.ExpandableListView;
@@ -19,17 +18,27 @@ import java.util.List;
 import java.util.Map;
 
 import static android.content.ContentValues.TAG;
+import static de.robv.android.xposed.installer.XposedApp.getPackageIcon;
 import static de.robv.android.xposed.installer.XposedApp.getPackageLabel;
 
 public class PermissionManagerFragment extends Fragment {
 
     View rootView;
     ExpandableListView lv;
+    private MenuItem mClickedMenuItem = null;
+    private CustomExpandableListAdapter adapter = null;
 
     public PermissionManagerFragment() {
 
     }
 
+
+    @Override
+    public void onActivityCreated(Bundle savedInstanceState) {
+        super.onActivityCreated(savedInstanceState);
+        setHasOptionsMenu(true);
+    }
+    
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
     }
@@ -50,8 +59,8 @@ public class PermissionManagerFragment extends Fragment {
         try {
             final List<String> modules = new ArrayList<>(permissionsMap.keySet());
             lv = (ExpandableListView) view.findViewById(R.id.listPermissions);
-            lv.setAdapter(new CustomExpandableListAdapter(this.getActivity(), modules, permissionsMap));
-            lv.setGroupIndicator(null);
+            adapter = new CustomExpandableListAdapter(this.getActivity(), modules, permissionsMap);
+            lv.setAdapter(adapter);
             lv.setOnChildClickListener(new ExpandableListView.OnChildClickListener() {
                 @Override
                 public boolean onChildClick(ExpandableListView parent, View v,
@@ -71,6 +80,30 @@ public class PermissionManagerFragment extends Fragment {
         } catch (Exception e) {
             Log.e(TAG, "Error onCreate");
         }
+    }
+
+    @Override
+    public void onCreateOptionsMenu(Menu menu, MenuInflater inflater) {
+        inflater.inflate(R.menu.menu_permission_manager, menu);
+    }
+
+    @Override
+    public boolean onOptionsItemSelected(MenuItem item) {
+        mClickedMenuItem = item;
+        switch (item.getItemId()) {
+            case R.id.menu_clear:
+                clear();
+                return true;
+        }
+        return super.onOptionsItemSelected(item);
+    }
+
+    private void clear() {
+        Map<String, List<Pair<String, Boolean>>> pmap = XposedApp.getPermissionsMap();
+        pmap.clear();
+        PermissionManagerUtil.savePermissionsFile(pmap);
+        adapter.expandableListTitle = new ArrayList<>(pmap.keySet());
+        adapter.notifyDataSetChanged();
     }
 
     public class CustomExpandableListAdapter extends BaseExpandableListAdapter {
@@ -111,6 +144,9 @@ public class PermissionManagerFragment extends Fragment {
                     .findViewById(R.id.listPermissionPackageName);
             expandedListTextView.setText(getPackageLabel(expandedListText.first) + " (" + expandedListText.first + ")");
             expandedListTextView.setChecked(expandedListText.second);
+            Drawable icon = getPackageIcon(expandedListText.first);
+            expandedListTextView.setCompoundDrawablePadding(10);
+            expandedListTextView.setCompoundDrawables(icon, null, expandedListTextView.getCompoundDrawables()[2], null);
             return convertView;
         }
 
@@ -148,6 +184,9 @@ public class PermissionManagerFragment extends Fragment {
                     .findViewById(R.id.listPermissionModuleName);
             listTitleTextView.setTypeface(null, Typeface.BOLD);
             listTitleTextView.setText(getPackageLabel(listTitle) + " (" + listTitle + ")");
+            Drawable icon = getPackageIcon(listTitle);
+            listTitleTextView.setCompoundDrawablePadding(10);
+            listTitleTextView.setCompoundDrawables(icon, null, null, null);
             return convertView;
         }
 

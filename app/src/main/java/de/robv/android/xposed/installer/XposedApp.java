@@ -9,6 +9,7 @@ import android.content.Intent;
 import android.content.SharedPreferences;
 import android.content.pm.PackageInfo;
 import android.content.pm.PackageManager;
+import android.graphics.drawable.Drawable;
 import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
@@ -93,7 +94,7 @@ public class XposedApp extends Application implements ActivityLifecycleCallbacks
         }
     }
 
-    public static String getPackageLabel(String packageName) {
+    public synchronized static String getPackageLabel(String packageName) {
         PackageInfo pkg;
         PackageManager mPm = mInstance.getPackageManager();
         try {
@@ -101,6 +102,19 @@ public class XposedApp extends Application implements ActivityLifecycleCallbacks
             return pkg.applicationInfo.loadLabel(mPm).toString();
         } catch (PackageManager.NameNotFoundException e) {
             return packageName;
+        }
+    }
+
+    public synchronized static Drawable getPackageIcon(String packageName) {
+        PackageInfo pkg;
+        PackageManager mPm = mInstance.getPackageManager();
+        try {
+            pkg = mPm.getPackageInfo(packageName, PackageManager.GET_META_DATA);
+            Drawable icon = pkg.applicationInfo.loadIcon(mPm);
+            icon.setBounds(0, 0, 50, 50);
+            return icon;
+        } catch (PackageManager.NameNotFoundException e) {
+            return null;
         }
     }
 
